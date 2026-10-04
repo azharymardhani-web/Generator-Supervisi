@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Administrasi Madrasah - Kurikulum Berbasis Cinta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        madrasah: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            700: '#047857',
+                            900: '#064e3b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        
+        /* A4 Paper Styling for Preview */
+        .a4-wrapper {
+            overflow-x: auto;
+            background-color: #e5e7eb;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+        }
+        
+        .a4-paper {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #000;
+        }
+
+        /* Print Specific Styles */
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { background: white; margin: 0; }
+            body * { visibility: hidden; }
+            
+            #preview-container, #preview-container * {
+                visibility: visible;
+            }
+            
+            #preview-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 210mm;
+                margin: 0;
+                padding: 15mm;
+                box-shadow: none;
+                background: transparent;
+            }
+
+            .no-print { display: none !important; }
+            .a4-wrapper { padding: 0; background-color: transparent; box-shadow: none; overflow: visible;}
+        }
+
+        /* Table styles inside preview */
+        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+        .doc-table th, .doc-table td { border: 1px solid #000; padding: 6px 10px; vertical-align: top; }
+        .doc-table th { background-color: #f9fafb; font-weight: 600; text-align: center; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen text-slate-800">
+
+    <header class="bg-madrasah-700 text-white p-5 shadow-lg no-print z-10 relative">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-white p-2 rounded-full shadow-md text-madrasah-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-wide">GenAdmin Madrasah</h1>
+                    <p class="text-madrasah-100 text-xs sm:text-sm">Kurikulum Merdeka & Pendekatan Berbasis Cinta</p>
+                </div>
+            </div>
+            <button onclick="window.print()" class="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 px-5 py-2.5 rounded-lg shadow-md font-semibold transition-all transform hover:scale-105">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.728 12.51l5.733-5.732a.75.75 0 0 1 1.06 0l5.733 5.732M12.99 4v11m-9 3.5a2.5 2.5 0 0 0 2.5 2.5h13a2.5 2.5 0 0 0 2.5-2.5" />
+                </svg>
+                Cetak / Simpan PDF
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto w-full p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 flex-grow">
+        
+        <!-- Left Panel: Form -->
+        <aside class="lg:col-span-4 bg-white p-5 rounded-xl shadow-md border border-gray-100 no-print h-fit">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-madrasah-500"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
+                Pengaturan Dokumen
+            </h2>
+            
+            <form id="docForm" class="space-y-4">
+                <!-- Jenis Dokumen -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Jenis Dokumen</label>
+                    <select id="docType" class="w-full p-2.5 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-madrasah-500 focus:border-madrasah-500 transition-colors">
+                        <option value="PROTA">Program Tahunan (PROTA)</option>
+                        <option value="PROMES">Program Semester (PROMES)</option>
+                        <option value="CP">Capaian Pembelajaran (CP)</option>
+                        <option value="ATP">Alur Tujuan Pembelajaran (ATP)</option>
+                        <option value="KKTP">Kriteria Ketercapaian TP (KKTP)</option>
+                        <option value="RPM">Rencana Pekan Mengajar (RPM)</option>
+                    </select>
+                </div>
+
+                <div class="border-t border-gray-100 pt-4">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Identitas Sekolah</h3>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Madrasah</label>
+                        <input type="text" id="sekolah" value="MTs Al-Ikhlas Jakarta" class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-madrasah-500 focus:border-madrasah-500 text-sm">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mt-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tahun Ajaran</label>
+                            <input type="text" id="tahunAjaran" value="2026/2027" class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-madrasah-500 focus:border-madrasah-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mata Pelajaran</label>
+                            <input type="text" id="mapel" value="Akidah Akhlak" class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-madrasah-500 focus:border-madrasah-500 text-sm">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3 mt-3">
+                        <div class="col-span-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fase</label>
+                            <input type="text" id="fase" value="D" class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-madrasah-500 focus:border-madrasah-500 text-sm">
+                        </div>
+                        <div class="col-span-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
+                            <input type="text" id="kelas" value="VII (Tujuh)" class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-madrasah-500 focus:border-madrasah-500 text-sm">
+                        </div>
+                        <div class="col-span-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Semester</label>
+                            <input type="text" id="semester" value="Ganjil" class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-madrasah-500 focus:border-madrasah-500 text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-100 pt-4">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Tanda Tangan & Personal</h3>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kepala Madrasah</label>
+                        <input type="text" id="kepsek" value="Drs. H. Ahmad Dahlan, M.Pd." class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-madrasah-500 focus:border-madrasah-500 text-sm">
+                    </div>
+                    <div class="mt-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Guru Mapel</label>
+                        <input type="text" id="guru" value="Siti Aminah, S.Ag." class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-madrasah-500 focus:border-madrasah-500 text-sm">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mt-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">NIP Kepsek</label>
+                            <input type="text" id="nipKepsek" value="19700101 199503 1 001" class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-madrasah-500 focus:border-madrasah-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">NIP Guru</label>
+                            <input type="text" id="nipGuru" value="19850512 201001 2 004" class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-madrasah-500 focus:border-madrasah-500 text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-100 pt-4">
+                    <div class="bg-madrasah-50 border border-madrasah-200 p-3 rounded-lg">
+                        <label class="block text-sm font-bold text-madrasah-700 mb-1 flex items-center gap-1">
+                            <span>❤️</span> Nilai Kurikulum Berbasis Cinta
+                        </label>
+                        <textarea id="nilaiCinta" rows="2" class="w-full p-2.5 border border-madrasah-300 rounded-lg focus:ring-madrasah-500 focus:border-madrasah-500 text-sm bg-white text-madrasah-900">Empati, Kasih Sayang, Toleransi, dan Akhlakul Karimah</textarea>
+                        <p class="text-[11px] text-madrasah-600 mt-1 leading-tight">Nilai ini otomatis akan disisipkan ke dalam rumusan CP, ATP, dan narasi RPM Anda.</p>
+                    </div>
+                </div>
+            </form>
+        </aside>
+
+        <!-- Right Panel: Live Preview -->
+        <section class="lg:col-span-8">
+            <div class="flex items-center justify-between mb-3 no-print">
+                <h2 class="text-sm font-bold text-gray-500 uppercase tracking-widest">Live Preview (Kertas A4)</h2>
+                <span class="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">Auto-Update</span>
+            </div>
+            
+            <div class="a4-wrapper">
+                <div id="preview-container" class="a4-paper">
+                    <!-- Konten dinamis masuk kesini via JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const formElements = document.querySelectorAll('#docForm input, #docForm select, #docForm textarea');
+        const previewContainer = document.getElementById('preview-container');
+        
+        formElements.forEach(el => {
+            el.addEventListener('input', generatePreview);
+            el.addEventListener('change', generatePreview);
+        });
+
+        window.onload = () => {
+            generatePreview();
+        };
+
+        function generatePreview() {
+            const docType = document.getElementById('docType').value;
+            const data = {
+                sekolah: document.getElementById('sekolah').value,
+                tahunAjaran: document.getElementById('tahunAjaran').value,
+                mapel: document.getElementById('mapel').value,
+                fase: document.getElementById('fase').value,
+                kelas: document.getElementById('kelas').value,
+                semester: document.getElementById('semester').value,
+                kepsek: document.getElementById('kepsek').value,
+                guru: document.getElementById('guru').value,
+                nipKepsek: document.getElementById('nipKepsek').value,
+                nipGuru: document.getElementById('nipGuru').value,
+                nilaiCinta: document.getElementById('nilaiCinta').value
+            };
+
+            const docTitleMap = {
+                'PROTA': 'PROGRAM TAHUNAN (PROTA)',
+                'PROMES': 'PROGRAM SEMESTER (PROMES)',
+                'CP': 'CAPAIAN PEMBELAJARAN (CP)',
+                'ATP': 'ALUR TUJUAN PEMBELAJARAN (ATP)',
+                'KKTP': 'KRITERIA KETERCAPAIAN TUJUAN PEMBELAJARAN (KKTP)',
+                'RPM': 'RENCANA PEKAN MENGAJAR (RPM)'
+            };
+
+            let html = `
+                <div style="text-align: center; margin-bottom: 2rem; border-bottom: 2px solid #000; padding-bottom: 10px;">
+                    <h2 style="font-size: 14pt; font-weight: bold; margin: 0;">${docTitleMap[docType]}</h2>
+                    <h3 style="font-size: 12pt; font-weight: bold; margin: 5px 0;">KURIKULUM MERDEKA - BERBASIS CINTA</h3>
+                    <p style="font-size: 11pt; margin: 0; text-transform: uppercase;">${data.sekolah}</p>
+                </div>
+                
+                <table style="width: 100%; margin-bottom: 1.5rem; border: none; font-weight: 600;">
+                    <tr>
+                        <td style="width: 120px; padding: 2px 0;">Mata Pelajaran</td>
+                        <td style="width: 10px;">:</td>
+                        <td>${data.mapel}</td>
+                        <td style="width: 120px; padding: 2px 0;">Fase / Kelas</td>
+                        <td style="width: 10px;">:</td>
+                        <td>${data.fase} / ${data.kelas}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 2px 0;">Tahun Ajaran</td>
+                        <td>:</td>
+                        <td>${data.tahunAjaran}</td>
+                        <td style="padding: 2px 0;">Semester</td>
+                        <td>:</td>
+                        <td>${data.semester}</td>
+                    </tr>
+                </table>
+            `;
+
+            switch(docType) {
+                case 'PROTA':
+                    html += `
+                        <table class="doc-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 5%">No</th>
+                                    <th style="width: 15%">Semester</th>
+                                    <th style="width: 50%">Tujuan Pembelajaran / Materi Pokok</th>
+                                    <th style="width: 15%">Alokasi Waktu (JP)</th>
+                                    <th style="width: 15%">Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td align="center">1</td>
+                                    <td align="center">Ganjil</td>
+                                    <td>Memahami konsep dasar ${data.mapel} dengan mengintegrasikan nilai ${data.nilaiCinta} dalam kehidupan sehari-hari.</td>
+                                    <td align="center">36 JP</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td align="center">2</td>
+                                    <td align="center">Ganjil</td>
+                                    <td>Mempraktikkan adab dan tata krama interaksi sosial berbasis kasih sayang di lingkungan madrasah.</td>
+                                    <td align="center">36 JP</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td align="center">3</td>
+                                    <td align="center">Genap</td>
+                                    <td>Menganalisis sejarah peradaban dengan pendekatan empati terhadap tokoh dan peristiwa.</td>
+                                    <td align="center">36 JP</td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    `;
+                    break;
+                case 'PROMES':
+                    html += `
+                        <table class="doc-table">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2" style="width: 5%">No</th>
+                                    <th rowspan="2" style="width: 35%">Tujuan Pembelajaran / Materi Pokok</th>
+                                    <th rowspan="2" style="width: 10%">JP</th>
+                                    <th colspan="4">Bulan 1</th>
+                                    <th colspan="4">Bulan 2</th>
+                                </tr>
+                                <tr>
+                                    <th style="width: 5%">1</th><th style="width: 5%">2</th><th style="width: 5%">3</th><th style="width: 5%">4</th>
+                                    <th style="width: 5%">1</th><th style="width: 5%">2</th><th style="width: 5%">3</th><th style="width: 5%">4</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td align="center">1</td>
+                                    <td>Pemahaman dasar ${data.mapel} berlandaskan ${data.nilaiCinta}.</td>
+                                    <td align="center">12</td>
+                                    <td align="center" style="background:#e5e7eb;">V</td>
+                                    <td align="center" style="background:#e5e7eb;">V</td>
+                                    <td align="center"></td>
+                                    <td align="center"></td>
+                                    <td align="center"></td>
+                                    <td align="center"></td>
+                                    <td align="center"></td>
+                                    <td align="center"></td>
+                                </tr>
+                                <tr>
+                                    <td align="center">2</td>
+                                    <td>Aplikasi praktik dan penugasan kolaboratif.</td>
+                                    <td align="center">12</td>
+                                    <td align="center"></td>
+                                    <td align="center"></td>
+                                    <td align="center" style="background:#e5e7eb;">V</td>
+                                    <td align="center" style="background:#e5e7eb;">V</td>
+                                    <td align="center"></td>
+                                    <td align="center"></td>
+                                    <td align="center"></td>
+                                    <td align="center"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    `;
+                    break;
+                case 'CP':
+                    html += `
+                        <p style="margin-bottom: 1rem; text-align: justify;">
+                            <strong>Rasional Mata Pelajaran ${data.mapel}:</strong><br>
+                            Mata pelajaran ini bertujuan membekali peserta didik dengan kompetensi abad 21 yang tidak hanya menitikberatkan pada aspek kognitif, melainkan pendekatan spiritual dan emosional. Dengan implementasi Kurikulum Berbasis Cinta, peserta didik dibimbing untuk menginternalisasi <em>${data.nilaiCinta}</em>.
+                        </p>
+                        <table class="doc-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 25%">Elemen</th>
+                                    <th style="width: 45%">Deskripsi Capaian Pembelajaran</th>
+                                    <th style="width: 30%">Integrasi Nilai Cinta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Pemahaman Konsep</td>
+                                    <td>Peserta didik mampu mengidentifikasi, memahami, dan menjelaskan materi dasar ${data.mapel} secara sistematis.</td>
+                                    <td style="font-style: italic; color: #064e3b;">Memahami ilmu dengan kerendahan hati dan empati.</td>
+                                </tr>
+                                <tr>
+                                    <td>Keterampilan Proses</td>
+                                    <td>Peserta didik secara kritis dan kreatif menerapkan materi dalam memecahkan permasalahan nyata di masyarakat.</td>
+                                    <td style="font-style: italic; color: #064e3b;">Solusi yang dihasilkan mengedepankan ${data.nilaiCinta}.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    `;
+                    break;
+                case 'ATP':
+                    html += `
+                        <table class="doc-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 5%">No</th>
+                                    <th style="width: 25%">Capaian Pembelajaran (Elemen)</th>
+                                    <th style="width: 30%">Tujuan Pembelajaran (TP)</th>
+                                    <th style="width: 30%">Profil Pelajar Rahmatan Lil 'Alamin & Nilai Cinta</th>
+                                    <th style="width: 10%">JP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td align="center">1</td>
+                                    <td>Peserta didik memahami dasar-dasar pengetahuan ${data.mapel}.</td>
+                                    <td>Menjelaskan ruang lingkup materi dengan bahasa sendiri secara baik dan benar.</td>
+                                    <td>Berkeadaban (Ta'addub). Mengedepankan <strong>${data.nilaiCinta}</strong> dalam berdiskusi.</td>
+                                    <td align="center">4 JP</td>
+                                </tr>
+                                <tr>
+                                    <td align="center">2</td>
+                                    <td>Peserta didik terampil melakukan observasi dan analisis.</td>
+                                    <td>Menyajikan laporan hasil observasi fenomena sosial/alam terkait materi.</td>
+                                    <td>Keteladanan
